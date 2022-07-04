@@ -6,7 +6,6 @@ import (
 	"go-coinstream/pkg/dto"
 	"go-coinstream/pkg/service"
 	"io/ioutil"
-	"log"
 	"net/http"
 )
 
@@ -37,7 +36,7 @@ func (h *Handlers) GetAllExpenses(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		log.Fatal(err)
+		return
 	}
 
 	w.Write(result)
@@ -51,13 +50,13 @@ func (h *Handlers) GetExpenseByID(w http.ResponseWriter, r *http.Request) {
 	expense, err := h.service.FindById(r.Context(), id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
-		log.Fatal(err)
+		return
 	}
 
 	result, err := json.Marshal(expense)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		log.Fatal(err)
+		return
 	}
 
 	w.Write(result)
@@ -67,7 +66,8 @@ func (h *Handlers) CreateExpense(w http.ResponseWriter, r *http.Request) {
 
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		log.Fatal(err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 
 	exp := new(dto.ExpenseRequest)
@@ -76,13 +76,13 @@ func (h *Handlers) CreateExpense(w http.ResponseWriter, r *http.Request) {
 	expense, err := h.service.Add(r.Context(), exp)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		log.Fatal(err)
+		return
 	}
 
 	result, err := json.Marshal(expense)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		log.Fatal(err)
+		return
 	}
 
 	w.WriteHeader(http.StatusCreated)
@@ -95,8 +95,8 @@ func (h *Handlers) UpdateExpense(w http.ResponseWriter, r *http.Request) {
 
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		log.Fatal(err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 
 	exp := new(dto.ExpenseRequest)
@@ -105,13 +105,13 @@ func (h *Handlers) UpdateExpense(w http.ResponseWriter, r *http.Request) {
 	expense, err := h.service.Update(r.Context(), id, exp)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		log.Fatal(err)
+		return
 	}
 
 	result, err := json.Marshal(expense)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		log.Fatal(err)
+		return
 	}
 
 	w.WriteHeader(http.StatusAccepted)
@@ -125,7 +125,7 @@ func (h *Handlers) DeleteExpenseByID(w http.ResponseWriter, r *http.Request) {
 	err := h.service.Delete(r.Context(), id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
-		log.Fatal(err)
+		return
 	}
 
 	w.WriteHeader(http.StatusNoContent)
