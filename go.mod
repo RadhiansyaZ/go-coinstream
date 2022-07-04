@@ -4,7 +4,6 @@ go 1.18
 
 require (
 	github.com/gofiber/fiber/v2 v2.34.1
-	github.com/gorilla/mux v1.8.0
 	github.com/lib/pq v1.10.6
 	github.com/spf13/viper v1.12.0
 )
