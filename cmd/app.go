@@ -4,25 +4,24 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
+	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
-	"github.com/spf13/viper"
 	"go-coinstream/pkg/handler"
 	"go-coinstream/pkg/repository"
 	"go-coinstream/pkg/service"
 	"log"
+	"os"
 )
 
 func createConnection() (*sql.DB, error) {
-	viper.SetConfigFile(".env")
-	viper.AutomaticEnv()
-	err := viper.ReadInConfig()
+	godotenv.Load()
 
 	connStr := fmt.Sprintf(
 		"postgresql://%s:%s@%s:%s/coinstream?sslmode=disable",
-		viper.Get("DATABASE_USERNAME"),
-		viper.Get("DATABASE_PASSWORD"),
-		viper.Get("DATABASE_HOST"),
-		viper.Get("DATABASE_PORT"))
+		os.Getenv("DATABASE_USERNAME"),
+		os.Getenv("DATABASE_PASSWORD"),
+		os.Getenv("DATABASE_HOST"),
+		os.Getenv("DATABASE_PORT"))
 
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
