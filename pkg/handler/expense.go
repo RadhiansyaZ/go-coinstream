@@ -1,86 +1,132 @@
 package handler
 
 import (
-	"github.com/gofiber/fiber/v2"
+	"encoding/json"
+	"github.com/go-chi/chi/v5"
 	"go-coinstream/pkg/dto"
 	"go-coinstream/pkg/service"
+	"io/ioutil"
+	"net/http"
 )
 
 type ExpenseHandlers interface {
-	GetAllExpenses(ctx *fiber.Ctx) error
-	GetExpenseByID(ctx *fiber.Ctx) error
-	CreateExpense(ctx *fiber.Ctx) error
-	UpdateExpense(ctx *fiber.Ctx) error
-	DeleteExpenseByID(ctx *fiber.Ctx) error
+	GetAllExpenses(w http.ResponseWriter, r *http.Request)
+	GetExpenseByID(w http.ResponseWriter, r *http.Request)
+	CreateExpense(w http.ResponseWriter, r *http.Request)
+	UpdateExpense(w http.ResponseWriter, r *http.Request)
+	DeleteExpenseByID(w http.ResponseWriter, r *http.Request)
 }
 
-type handlers struct {
-	service *service.ExpenseService
+type Handlers struct {
+	service service.ExpenseService
 }
 
-func NewHttpExpenseHandler(expenseService service.ExpenseService) *handlers {
-	return &handlers{
-		service: &expenseService,
+func NewHttpExpenseHandler(expenseService service.ExpenseService) *Handlers {
+	return &Handlers{
+		service: expenseService,
 	}
 }
 
-func (h *handlers) GetAllExpenses(ctx *fiber.Ctx) error {
-	ctx.Accepts("application/json")
+func (h *Handlers) GetAllExpenses(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 
-	expenses := (*h.service).FindAll()
+	expenses := h.service.FindAll(r.Context())
 
-	return ctx.JSON(expenses)
-}
-func (h *handlers) GetExpenseByID(ctx *fiber.Ctx) error {
-	ctx.Accepts("application/json")
-	id := ctx.Params("id")
+	result, err := json.Marshal(expenses)
 
-	expense, err := (*h.service).FindById(id)
 	if err != nil {
-		return err
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
-	return ctx.JSON(expense)
+	w.Write(result)
 }
-func (h *handlers) CreateExpense(ctx *fiber.Ctx) error {
-	ctx.Accepts("application/json")
+
+func (h *Handlers) GetExpenseByID(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	id := chi.URLParam(r, "id")
+
+	expense, err := h.service.FindById(r.Context(), id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	result, err := json.Marshal(expense)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Write(result)
+}
+func (h *Handlers) CreateExpense(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	exp := new(dto.ExpenseRequest)
-	if err := ctx.BodyParser(exp); err != nil {
-		return err
-	}
+	_ = json.Unmarshal(body, &exp)
 
-	expense, err := (*h.service).Add(exp)
+	expense, err := h.service.Add(r.Context(), exp)
 	if err != nil {
-		return err
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
-	return ctx.Status(fiber.StatusCreated).JSON(expense)
-}
+	result, err := json.Marshal(expense)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-func (h *handlers) UpdateExpense(ctx *fiber.Ctx) error {
-	ctx.Accepts("application/json")
-	id := ctx.Params("id")
+	w.WriteHeader(http.StatusCreated)
+	w.Write(result)
+}
+func (h *Handlers) UpdateExpense(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	id := chi.URLParam(r, "id")
+
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
 	exp := new(dto.ExpenseRequest)
-	if err := ctx.BodyParser(exp); err != nil {
-		return err
-	}
+	_ = json.Unmarshal(body, &exp)
 
-	expense, err := (*h.service).Update(id, exp)
+	expense, err := h.service.Update(r.Context(), id, exp)
 	if err != nil {
-		return err
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
-	return ctx.Status(fiber.StatusAccepted).JSON(expense)
+	result, err := json.Marshal(expense)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusAccepted)
+	w.Write(result)
 }
-func (h *handlers) DeleteExpenseByID(ctx *fiber.Ctx) error {
-	ctx.Accepts("application/json")
-	id := ctx.Params("id")
+func (h *Handlers) DeleteExpenseByID(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 
-	err := (*h.service).Delete(id)
+	id := chi.URLParam(r, "id")
+
+	err := h.service.Delete(r.Context(), id)
 	if err != nil {
-		return err
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
 	}
 
-	return ctx.SendStatus(fiber.StatusNoContent)
+	w.WriteHeader(http.StatusNoContent)
 }
