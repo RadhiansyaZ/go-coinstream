@@ -3,19 +3,18 @@ package cmd
 import (
 	"database/sql"
 	"fmt"
-	"github.com/gofiber/fiber/v2"
-	"github.com/joho/godotenv"
+	"github.com/go-chi/chi/v5"
 	_ "github.com/lib/pq"
 	"go-coinstream/pkg/handler"
 	"go-coinstream/pkg/repository"
+	"go-coinstream/pkg/route"
 	"go-coinstream/pkg/service"
 	"log"
+	"net/http"
 	"os"
 )
 
 func createConnection() (*sql.DB, error) {
-	godotenv.Load()
-
 	connStr := fmt.Sprintf(
 		"postgresql://%s:%s@%s:%s/coinstream?sslmode=disable",
 		os.Getenv("DATABASE_USERNAME"),
@@ -47,17 +46,12 @@ func Run() {
 	expenseRepo := repository.NewExpenseRepository(db)
 	expenseService := service.NewExpenseService(expenseRepo)
 	expenseHandler := handler.NewHttpExpenseHandler(expenseService)
+	expenseRouter := route.ExpenseRouter(expenseHandler)
 
-	app := fiber.New()
-
-	exp := app.Group("/expense")
-	exp.Get("/", expenseHandler.GetAllExpenses)
-	exp.Post("/", expenseHandler.CreateExpense)
-	exp.Get("/:id", expenseHandler.GetExpenseByID)
-	exp.Put("/:id", expenseHandler.UpdateExpense)
-	exp.Delete("/:id", expenseHandler.DeleteExpenseByID)
+	r := chi.NewRouter()
+	r.Mount("/expense", expenseRouter)
 
 	log.Println("Server starting at PORT 8000")
 
-	log.Fatal(app.Listen(":8000"))
+	log.Fatal(http.ListenAndServe(":8000", r))
 }
