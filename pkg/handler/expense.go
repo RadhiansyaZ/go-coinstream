@@ -9,7 +9,7 @@ import (
 	"net/http"
 )
 
-type ExpenseHandlers interface {
+type ExpenseHandler interface {
 	GetAllExpenses(w http.ResponseWriter, r *http.Request)
 	GetExpenseByID(w http.ResponseWriter, r *http.Request)
 	CreateExpense(w http.ResponseWriter, r *http.Request)
@@ -17,17 +17,17 @@ type ExpenseHandlers interface {
 	DeleteExpenseByID(w http.ResponseWriter, r *http.Request)
 }
 
-type Handlers struct {
+type ExpenseHTTPHandler struct {
 	service service.ExpenseService
 }
 
-func NewHttpExpenseHandler(expenseService service.ExpenseService) *Handlers {
-	return &Handlers{
+func NewHttpExpenseHandler(expenseService service.ExpenseService) *ExpenseHTTPHandler {
+	return &ExpenseHTTPHandler{
 		service: expenseService,
 	}
 }
 
-func (h *Handlers) GetAllExpenses(w http.ResponseWriter, r *http.Request) {
+func (h *ExpenseHTTPHandler) GetAllExpenses(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	expenses := h.service.FindAll(r.Context())
@@ -42,7 +42,7 @@ func (h *Handlers) GetAllExpenses(w http.ResponseWriter, r *http.Request) {
 	w.Write(result)
 }
 
-func (h *Handlers) GetExpenseByID(w http.ResponseWriter, r *http.Request) {
+func (h *ExpenseHTTPHandler) GetExpenseByID(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	id := chi.URLParam(r, "id")
@@ -61,7 +61,7 @@ func (h *Handlers) GetExpenseByID(w http.ResponseWriter, r *http.Request) {
 
 	w.Write(result)
 }
-func (h *Handlers) CreateExpense(w http.ResponseWriter, r *http.Request) {
+func (h *ExpenseHTTPHandler) CreateExpense(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	body, err := ioutil.ReadAll(r.Body)
@@ -88,7 +88,7 @@ func (h *Handlers) CreateExpense(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	w.Write(result)
 }
-func (h *Handlers) UpdateExpense(w http.ResponseWriter, r *http.Request) {
+func (h *ExpenseHTTPHandler) UpdateExpense(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	id := chi.URLParam(r, "id")
@@ -117,7 +117,7 @@ func (h *Handlers) UpdateExpense(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusAccepted)
 	w.Write(result)
 }
-func (h *Handlers) DeleteExpenseByID(w http.ResponseWriter, r *http.Request) {
+func (h *ExpenseHTTPHandler) DeleteExpenseByID(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	id := chi.URLParam(r, "id")

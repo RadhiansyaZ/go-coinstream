@@ -5,7 +5,7 @@ import (
 	"go-coinstream/pkg/handler"
 )
 
-func ExpenseRouter(routeHandler *handler.Handlers) *chi.Mux {
+func ExpenseRouter(routeHandler handler.ExpenseHandler) *chi.Mux {
 	route := chi.NewRouter()
 
 	route.Get("/", routeHandler.GetAllExpenses)
