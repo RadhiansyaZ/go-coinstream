@@ -15,17 +15,17 @@ type ExpenseService interface {
 }
 
 type Service struct {
-	repo *repository.ExpenseRepository
+	repo repository.ExpenseRepository
 }
 
 func NewExpenseService(repo repository.ExpenseRepository) *Service {
-	return &Service{repo: &repo}
+	return &Service{repo: repo}
 }
 
 func (s *Service) Add(data *dto.ExpenseRequest) (*entity.Expense, error) {
 	expense := data.ToExpenseEntity()
 
-	res, err := (*s.repo).Add(expense)
+	res, err := s.repo.Add(expense)
 	if err != nil {
 		return nil, err
 	}
@@ -34,32 +34,32 @@ func (s *Service) Add(data *dto.ExpenseRequest) (*entity.Expense, error) {
 }
 
 func (s *Service) FindAll() []entity.Expense {
-	res, _ := (*s.repo).FindAll()
+	res, _ := s.repo.FindAll()
 	return res
 }
 
 func (s *Service) FindById(id string) (*entity.Expense, error) {
-	res, err := (*s.repo).FindById(id)
+	res, err := s.repo.FindById(id)
 	if err != nil {
 		return nil, err
 	}
 	return res, nil
 }
 func (s *Service) Update(id string, data *dto.ExpenseRequest) (*entity.Expense, error) {
-	_, err := (*s.repo).FindById(id)
+	_, err := s.repo.FindById(id)
 	if err != nil {
 		return nil, err
 	}
 	expense := data.ToExpenseEntity()
 
-	res, err := (*s.repo).Update(id, expense)
+	res, err := s.repo.Update(id, expense)
 	return res, nil
 }
 
 func (s *Service) Delete(id string) error {
-	_, err := (*s.repo).FindById(id)
+	_, err := s.repo.FindById(id)
 	if err != nil {
 		return err
 	}
-	return (*s.repo).Delete(id)
+	return s.repo.Delete(id)
 }

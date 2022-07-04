@@ -15,19 +15,19 @@ type ExpenseHandlers interface {
 }
 
 type handlers struct {
-	service *service.ExpenseService
+	service service.ExpenseService
 }
 
 func NewHttpExpenseHandler(expenseService service.ExpenseService) *handlers {
 	return &handlers{
-		service: &expenseService,
+		service: expenseService,
 	}
 }
 
 func (h *handlers) GetAllExpenses(ctx *fiber.Ctx) error {
 	ctx.Accepts("application/json")
 
-	expenses := (*h.service).FindAll()
+	expenses := h.service.FindAll()
 
 	return ctx.JSON(expenses)
 }
@@ -35,7 +35,7 @@ func (h *handlers) GetExpenseByID(ctx *fiber.Ctx) error {
 	ctx.Accepts("application/json")
 	id := ctx.Params("id")
 
-	expense, err := (*h.service).FindById(id)
+	expense, err := h.service.FindById(id)
 	if err != nil {
 		return err
 	}
@@ -49,7 +49,7 @@ func (h *handlers) CreateExpense(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	expense, err := (*h.service).Add(exp)
+	expense, err := h.service.Add(exp)
 	if err != nil {
 		return err
 	}
@@ -66,7 +66,7 @@ func (h *handlers) UpdateExpense(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	expense, err := (*h.service).Update(id, exp)
+	expense, err := h.service.Update(id, exp)
 	if err != nil {
 		return err
 	}
@@ -77,7 +77,7 @@ func (h *handlers) DeleteExpenseByID(ctx *fiber.Ctx) error {
 	ctx.Accepts("application/json")
 	id := ctx.Params("id")
 
-	err := (*h.service).Delete(id)
+	err := h.service.Delete(id)
 	if err != nil {
 		return err
 	}
