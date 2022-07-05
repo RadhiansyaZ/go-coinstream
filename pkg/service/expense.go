@@ -47,7 +47,7 @@ func (s *Service) FindById(ctx context.Context, id string) (*entity.Expense, err
 	return res, nil
 }
 func (s *Service) Update(ctx context.Context, id string, data *dto.ExpenseRequest) (*entity.Expense, error) {
-	_, err := s.repo.FindById(ctx, id)
+	_, err := s.FindById(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +58,7 @@ func (s *Service) Update(ctx context.Context, id string, data *dto.ExpenseReques
 }
 
 func (s *Service) Delete(ctx context.Context, id string) error {
-	_, err := s.repo.FindById(ctx, id)
+	_, err := s.FindById(ctx, id)
 	if err != nil {
 		return err
 	}

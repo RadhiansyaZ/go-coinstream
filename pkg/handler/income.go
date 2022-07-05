@@ -9,30 +9,30 @@ import (
 	"net/http"
 )
 
-type ExpenseHandler interface {
-	GetAllExpenses(w http.ResponseWriter, r *http.Request)
-	GetExpenseByID(w http.ResponseWriter, r *http.Request)
-	CreateExpense(w http.ResponseWriter, r *http.Request)
-	UpdateExpense(w http.ResponseWriter, r *http.Request)
-	DeleteExpenseByID(w http.ResponseWriter, r *http.Request)
+type IncomeHandler interface {
+	GetAllIncomes(w http.ResponseWriter, r *http.Request)
+	GetIncomeByID(w http.ResponseWriter, r *http.Request)
+	CreateIncome(w http.ResponseWriter, r *http.Request)
+	UpdateIncome(w http.ResponseWriter, r *http.Request)
+	DeleteIncomeByID(w http.ResponseWriter, r *http.Request)
 }
 
-type ExpenseHTTPHandler struct {
-	service service.ExpenseService
+type IncomeHTTPHandler struct {
+	service service.IncomeService
 }
 
-func NewHttpExpenseHandler(expenseService service.ExpenseService) *ExpenseHTTPHandler {
-	return &ExpenseHTTPHandler{
-		service: expenseService,
+func NewHttpIncomeHandler(incomeService service.IncomeService) *IncomeHTTPHandler {
+	return &IncomeHTTPHandler{
+		service: incomeService,
 	}
 }
 
-func (h *ExpenseHTTPHandler) GetAllExpenses(w http.ResponseWriter, r *http.Request) {
+func (i IncomeHTTPHandler) GetAllIncomes(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	expenses := h.service.FindAll(r.Context())
+	incomes := i.service.FindAll(r.Context())
 
-	result, err := json.Marshal(expenses)
+	result, err := json.Marshal(incomes)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -42,18 +42,18 @@ func (h *ExpenseHTTPHandler) GetAllExpenses(w http.ResponseWriter, r *http.Reque
 	w.Write(result)
 }
 
-func (h *ExpenseHTTPHandler) GetExpenseByID(w http.ResponseWriter, r *http.Request) {
+func (i IncomeHTTPHandler) GetIncomeByID(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	id := chi.URLParam(r, "id")
 
-	expense, err := h.service.FindById(r.Context(), id)
+	income, err := i.service.FindById(r.Context(), id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
-	result, err := json.Marshal(expense)
+	result, err := json.Marshal(income)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -61,7 +61,8 @@ func (h *ExpenseHTTPHandler) GetExpenseByID(w http.ResponseWriter, r *http.Reque
 
 	w.Write(result)
 }
-func (h *ExpenseHTTPHandler) CreateExpense(w http.ResponseWriter, r *http.Request) {
+
+func (i IncomeHTTPHandler) CreateIncome(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	body, err := ioutil.ReadAll(r.Body)
@@ -70,16 +71,16 @@ func (h *ExpenseHTTPHandler) CreateExpense(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	exp := new(dto.ExpenseRequest)
-	_ = json.Unmarshal(body, &exp)
+	inc := new(dto.IncomeRequest)
+	_ = json.Unmarshal(body, &inc)
 
-	expense, err := h.service.Add(r.Context(), exp)
+	income, err := i.service.Add(r.Context(), inc)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	result, err := json.Marshal(expense)
+	result, err := json.Marshal(income)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -88,7 +89,8 @@ func (h *ExpenseHTTPHandler) CreateExpense(w http.ResponseWriter, r *http.Reques
 	w.WriteHeader(http.StatusCreated)
 	w.Write(result)
 }
-func (h *ExpenseHTTPHandler) UpdateExpense(w http.ResponseWriter, r *http.Request) {
+
+func (i IncomeHTTPHandler) UpdateIncome(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	id := chi.URLParam(r, "id")
@@ -99,16 +101,16 @@ func (h *ExpenseHTTPHandler) UpdateExpense(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	exp := new(dto.ExpenseRequest)
-	_ = json.Unmarshal(body, &exp)
+	inc := new(dto.IncomeRequest)
+	_ = json.Unmarshal(body, &inc)
 
-	expense, err := h.service.Update(r.Context(), id, exp)
+	income, err := i.service.Update(r.Context(), id, inc)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	result, err := json.Marshal(expense)
+	result, err := json.Marshal(income)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -117,12 +119,12 @@ func (h *ExpenseHTTPHandler) UpdateExpense(w http.ResponseWriter, r *http.Reques
 	w.WriteHeader(http.StatusAccepted)
 	w.Write(result)
 }
-func (h *ExpenseHTTPHandler) DeleteExpenseByID(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 
+func (i IncomeHTTPHandler) DeleteIncomeByID(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 	id := chi.URLParam(r, "id")
 
-	err := h.service.Delete(r.Context(), id)
+	err := i.service.Delete(r.Context(), id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
