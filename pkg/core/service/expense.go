@@ -2,28 +2,28 @@ package service
 
 import (
 	"context"
-	"go-coinstream/pkg/dto"
-	"go-coinstream/pkg/entity"
+	"go-coinstream/pkg/core/entity"
+	"go-coinstream/pkg/handler/dto"
 	"go-coinstream/pkg/repository"
 )
 
 type ExpenseService interface {
-	Add(ctx context.Context, expense *dto.ExpenseRequest) (*entity.Expense, error)
+	Add(ctx context.Context, expense dto.ExpenseRequest) (*entity.Expense, error)
 	FindAll(ctx context.Context) []entity.Expense
 	FindById(ctx context.Context, id string) (*entity.Expense, error)
-	Update(ctx context.Context, id string, expense *dto.ExpenseRequest) (*entity.Expense, error)
+	Update(ctx context.Context, id string, expense dto.ExpenseRequest) (*entity.Expense, error)
 	Delete(ctx context.Context, id string) error
 }
 
-type Service struct {
+type expenseService struct {
 	repo repository.ExpenseRepository
 }
 
-func NewExpenseService(repo repository.ExpenseRepository) *Service {
-	return &Service{repo: repo}
+func NewExpenseService(repo repository.ExpenseRepository) *expenseService {
+	return &expenseService{repo: repo}
 }
 
-func (s *Service) Add(ctx context.Context, data *dto.ExpenseRequest) (*entity.Expense, error) {
+func (s *expenseService) Add(ctx context.Context, data dto.ExpenseRequest) (*entity.Expense, error) {
 	expense := data.ToExpenseEntity()
 
 	res, err := s.repo.Add(ctx, expense)
@@ -34,19 +34,19 @@ func (s *Service) Add(ctx context.Context, data *dto.ExpenseRequest) (*entity.Ex
 	return res, nil
 }
 
-func (s *Service) FindAll(ctx context.Context) []entity.Expense {
+func (s *expenseService) FindAll(ctx context.Context) []entity.Expense {
 	res, _ := s.repo.FindAll(ctx)
 	return res
 }
 
-func (s *Service) FindById(ctx context.Context, id string) (*entity.Expense, error) {
+func (s *expenseService) FindById(ctx context.Context, id string) (*entity.Expense, error) {
 	res, err := s.repo.FindById(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 	return res, nil
 }
-func (s *Service) Update(ctx context.Context, id string, data *dto.ExpenseRequest) (*entity.Expense, error) {
+func (s *expenseService) Update(ctx context.Context, id string, data dto.ExpenseRequest) (*entity.Expense, error) {
 	_, err := s.FindById(ctx, id)
 	if err != nil {
 		return nil, err
@@ -57,7 +57,7 @@ func (s *Service) Update(ctx context.Context, id string, data *dto.ExpenseReques
 	return res, nil
 }
 
-func (s *Service) Delete(ctx context.Context, id string) error {
+func (s *expenseService) Delete(ctx context.Context, id string) error {
 	_, err := s.FindById(ctx, id)
 	if err != nil {
 		return err

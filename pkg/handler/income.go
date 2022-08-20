@@ -3,9 +3,9 @@ package handler
 import (
 	"encoding/json"
 	"github.com/go-chi/chi/v5"
-	"go-coinstream/pkg/dto"
-	"go-coinstream/pkg/service"
-	"io/ioutil"
+	"go-coinstream/pkg/core/service"
+	"go-coinstream/pkg/handler/dto"
+	"io"
 	"net/http"
 )
 
@@ -65,7 +65,7 @@ func (i IncomeHTTPHandler) GetIncomeByID(w http.ResponseWriter, r *http.Request)
 func (i IncomeHTTPHandler) CreateIncome(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	body, err := ioutil.ReadAll(r.Body)
+	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -74,7 +74,7 @@ func (i IncomeHTTPHandler) CreateIncome(w http.ResponseWriter, r *http.Request) 
 	inc := new(dto.IncomeRequest)
 	_ = json.Unmarshal(body, &inc)
 
-	income, err := i.service.Add(r.Context(), inc)
+	income, err := i.service.Add(r.Context(), *inc)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -95,7 +95,7 @@ func (i IncomeHTTPHandler) UpdateIncome(w http.ResponseWriter, r *http.Request) 
 
 	id := chi.URLParam(r, "id")
 
-	body, err := ioutil.ReadAll(r.Body)
+	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -104,7 +104,7 @@ func (i IncomeHTTPHandler) UpdateIncome(w http.ResponseWriter, r *http.Request) 
 	inc := new(dto.IncomeRequest)
 	_ = json.Unmarshal(body, &inc)
 
-	income, err := i.service.Update(r.Context(), id, inc)
+	income, err := i.service.Update(r.Context(), id, *inc)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
