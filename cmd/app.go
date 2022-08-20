@@ -53,9 +53,15 @@ func Run() {
 	incomeHandler := handler.NewHttpIncomeHandler(incomeService)
 	incomeRouter := route.IncomeRouter(incomeHandler)
 
+	userRepo := repository.NewUserRepository(db)
+	userService := service.NewUserService(userRepo)
+	userHandler := handler.NewHttpUserHandler(userService)
+	userRouter := route.UserRouter(userHandler)
+
 	r := chi.NewRouter()
 	r.Mount("/expense", expenseRouter)
 	r.Mount("/income", incomeRouter)
+	r.Mount("/user", userRouter)
 
 	log.Println("Server starting at PORT 8000")
 
