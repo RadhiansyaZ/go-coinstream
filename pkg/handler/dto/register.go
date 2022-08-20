@@ -1,6 +1,8 @@
 package dto
 
-import "go-coinstream/pkg/entity"
+import (
+	"go-coinstream/pkg/core/entity"
+)
 
 type RegisterRequest struct {
 	Email    string `json:"email"`

@@ -1,6 +1,8 @@
 package dto
 
-import "go-coinstream/pkg/entity"
+import (
+	"go-coinstream/pkg/core/entity"
+)
 
 type IncomeRequest struct {
 	Name   string  `json:"name"`
@@ -8,8 +10,8 @@ type IncomeRequest struct {
 	Date   string  `json:"date"`
 }
 
-func (income *IncomeRequest) ToIncomeEntity() *entity.Income {
-	return &entity.Income{
+func (income *IncomeRequest) ToIncomeEntity() entity.Income {
+	return entity.Income{
 		Name:   income.Name,
 		Amount: income.Amount,
 		Date:   income.Date,

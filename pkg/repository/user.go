@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"go-coinstream/pkg/entity"
+	"go-coinstream/pkg/core/entity"
 )
 
 type UserRepository interface {

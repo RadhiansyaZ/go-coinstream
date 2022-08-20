@@ -1,6 +1,8 @@
 package dto
 
-import "go-coinstream/pkg/entity"
+import (
+	"go-coinstream/pkg/core/entity"
+)
 
 type ExpenseRequest struct {
 	Name     string  `json:"name"`
@@ -9,8 +11,8 @@ type ExpenseRequest struct {
 	Date     string  `json:"date"`
 }
 
-func (expense *ExpenseRequest) ToExpenseEntity() *entity.Expense {
-	return &entity.Expense{
+func (expense *ExpenseRequest) ToExpenseEntity() entity.Expense {
+	return entity.Expense{
 		Name:     expense.Name,
 		Amount:   expense.Amount,
 		Category: expense.Category,

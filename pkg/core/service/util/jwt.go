@@ -3,7 +3,7 @@ package util
 import (
 	"errors"
 	"github.com/golang-jwt/jwt/v4"
-	"go-coinstream/pkg/entity"
+	"go-coinstream/pkg/core/entity"
 	"os"
 	"time"
 )

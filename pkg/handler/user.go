@@ -2,8 +2,8 @@ package handler
 
 import (
 	"encoding/json"
-	"go-coinstream/pkg/dto"
-	"go-coinstream/pkg/service"
+	"go-coinstream/pkg/core/service"
+	dto2 "go-coinstream/pkg/handler/dto"
 	"io"
 	"net/http"
 )
@@ -30,7 +30,7 @@ func (h *userHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var dtoRegister dto.RegisterRequest
+	var dtoRegister dto2.RegisterRequest
 	_ = json.Unmarshal(body, &dtoRegister)
 
 	user, err := h.service.Register(r.Context(), dtoRegister)
@@ -58,7 +58,7 @@ func (h *userHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var dtoLogin dto.LoginRequest
+	var dtoLogin dto2.LoginRequest
 	_ = json.Unmarshal(body, &dtoLogin)
 
 	token, err := h.service.Login(r.Context(), dtoLogin)

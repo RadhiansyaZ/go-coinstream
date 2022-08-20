@@ -3,9 +3,9 @@ package handler
 import (
 	"encoding/json"
 	"github.com/go-chi/chi/v5"
-	"go-coinstream/pkg/dto"
-	"go-coinstream/pkg/service"
-	"io/ioutil"
+	"go-coinstream/pkg/core/service"
+	"go-coinstream/pkg/handler/dto"
+	"io"
 	"net/http"
 )
 
@@ -64,13 +64,13 @@ func (h *ExpenseHTTPHandler) GetExpenseByID(w http.ResponseWriter, r *http.Reque
 func (h *ExpenseHTTPHandler) CreateExpense(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	body, err := ioutil.ReadAll(r.Body)
+	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	exp := new(dto.ExpenseRequest)
+	var exp dto.ExpenseRequest
 	_ = json.Unmarshal(body, &exp)
 
 	expense, err := h.service.Add(r.Context(), exp)
@@ -93,13 +93,13 @@ func (h *ExpenseHTTPHandler) UpdateExpense(w http.ResponseWriter, r *http.Reques
 
 	id := chi.URLParam(r, "id")
 
-	body, err := ioutil.ReadAll(r.Body)
+	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	exp := new(dto.ExpenseRequest)
+	var exp dto.ExpenseRequest
 	_ = json.Unmarshal(body, &exp)
 
 	expense, err := h.service.Update(r.Context(), id, exp)

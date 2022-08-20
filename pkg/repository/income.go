@@ -3,26 +3,26 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"go-coinstream/pkg/entity"
+	"go-coinstream/pkg/core/entity"
 )
 
 type IncomeRepository interface {
-	Add(ctx context.Context, income *entity.Income) (*entity.Income, error)
+	Add(ctx context.Context, income entity.Income) (*entity.Income, error)
 	FindAll(ctx context.Context) ([]entity.Income, error)
 	FindById(ctx context.Context, id string) (*entity.Income, error)
-	Update(ctx context.Context, id string, income *entity.Income) (*entity.Income, error)
+	Update(ctx context.Context, id string, income entity.Income) (*entity.Income, error)
 	Delete(ctx context.Context, id string) error
 }
 
-type IncomeStore struct {
+type incomeRepository struct {
 	db *sql.DB
 }
 
-func NewIncomeRepository(db *sql.DB) *IncomeStore {
-	return &IncomeStore{db: db}
+func NewIncomeRepository(db *sql.DB) *incomeRepository {
+	return &incomeRepository{db: db}
 }
 
-func (s *IncomeStore) Add(ctx context.Context, income *entity.Income) (*entity.Income, error) {
+func (s *incomeRepository) Add(ctx context.Context, income entity.Income) (*entity.Income, error) {
 	sqlStatement := `INSERT INTO income(name,amount,date) VALUES($1,$2,$3) RETURNING id`
 
 	row := s.db.QueryRowContext(ctx, sqlStatement, income.Name, income.Amount, income.Date)
@@ -35,10 +35,10 @@ func (s *IncomeStore) Add(ctx context.Context, income *entity.Income) (*entity.I
 
 	income.ID = insertId
 
-	return income, nil
+	return &income, nil
 }
 
-func (s *IncomeStore) FindAll(ctx context.Context) ([]entity.Income, error) {
+func (s *incomeRepository) FindAll(ctx context.Context) ([]entity.Income, error) {
 	sqlStatement := `SELECT id, name, amount, date FROM income`
 
 	rows, err := s.db.QueryContext(ctx, sqlStatement)
@@ -63,7 +63,7 @@ func (s *IncomeStore) FindAll(ctx context.Context) ([]entity.Income, error) {
 	return incomes, nil
 }
 
-func (s *IncomeStore) FindById(ctx context.Context, id string) (*entity.Income, error) {
+func (s *incomeRepository) FindById(ctx context.Context, id string) (*entity.Income, error) {
 	sqlStatement := `SELECT id, name, amount, date FROM income where id=$1`
 
 	var income entity.Income
@@ -78,7 +78,7 @@ func (s *IncomeStore) FindById(ctx context.Context, id string) (*entity.Income, 
 	return &income, nil
 }
 
-func (s *IncomeStore) Update(ctx context.Context, id string, income *entity.Income) (*entity.Income, error) {
+func (s *incomeRepository) Update(ctx context.Context, id string, income entity.Income) (*entity.Income, error) {
 	sqlStatement := `UPDATE income 
 						SET NAME=$2,
 							AMOUNT=$3,
@@ -93,10 +93,10 @@ func (s *IncomeStore) Update(ctx context.Context, id string, income *entity.Inco
 		return nil, err
 	}
 
-	return income, nil
+	return &income, nil
 }
 
-func (s *IncomeStore) Delete(ctx context.Context, id string) error {
+func (s *incomeRepository) Delete(ctx context.Context, id string) error {
 	sqlStatement := `DELETE FROM income WHERE id=$1`
 
 	s.db.QueryRowContext(ctx, sqlStatement, id)

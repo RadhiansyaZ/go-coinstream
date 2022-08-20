@@ -3,26 +3,26 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"go-coinstream/pkg/entity"
+	"go-coinstream/pkg/core/entity"
 	"log"
 )
 
 type ExpenseRepository interface {
-	Add(ctx context.Context, expense *entity.Expense) (*entity.Expense, error)
+	Add(ctx context.Context, expense entity.Expense) (*entity.Expense, error)
 	FindAll(ctx context.Context) ([]entity.Expense, error)
 	FindById(ctx context.Context, id string) (*entity.Expense, error)
-	Update(ctx context.Context, id string, expense *entity.Expense) (*entity.Expense, error)
+	Update(ctx context.Context, id string, expense entity.Expense) (*entity.Expense, error)
 	Delete(ctx context.Context, id string) error
 }
 
-type ExpenseStore struct {
+type expenseRepository struct {
 	db *sql.DB
 }
 
-func NewExpenseRepository(db *sql.DB) *ExpenseStore {
-	return &ExpenseStore{db: db}
+func NewExpenseRepository(db *sql.DB) *expenseRepository {
+	return &expenseRepository{db: db}
 }
-func (s *ExpenseStore) Add(ctx context.Context, expense *entity.Expense) (*entity.Expense, error) {
+func (s *expenseRepository) Add(ctx context.Context, expense entity.Expense) (*entity.Expense, error) {
 	sqlStatement := `INSERT INTO expense(name,amount,category,date) VALUES($1,$2,$3,$4) RETURNING id`
 
 	row := s.db.QueryRowContext(ctx, sqlStatement, expense.Name, expense.Amount, expense.Category, expense.Date)
@@ -35,10 +35,10 @@ func (s *ExpenseStore) Add(ctx context.Context, expense *entity.Expense) (*entit
 
 	expense.ID = insertId
 
-	return expense, nil
+	return &expense, nil
 }
 
-func (s *ExpenseStore) FindAll(ctx context.Context) ([]entity.Expense, error) {
+func (s *expenseRepository) FindAll(ctx context.Context) ([]entity.Expense, error) {
 	sqlStatement := `SELECT * FROM expense`
 
 	rows, err := s.db.QueryContext(ctx, sqlStatement)
@@ -64,7 +64,7 @@ func (s *ExpenseStore) FindAll(ctx context.Context) ([]entity.Expense, error) {
 	return expenses, nil
 }
 
-func (s *ExpenseStore) FindById(ctx context.Context, id string) (*entity.Expense, error) {
+func (s *expenseRepository) FindById(ctx context.Context, id string) (*entity.Expense, error) {
 	sqlStatement := `SELECT * FROM expense WHERE id=$1`
 
 	var expense entity.Expense
@@ -79,7 +79,7 @@ func (s *ExpenseStore) FindById(ctx context.Context, id string) (*entity.Expense
 	return &expense, nil
 }
 
-func (s *ExpenseStore) Update(ctx context.Context, id string, expense *entity.Expense) (*entity.Expense, error) {
+func (s *expenseRepository) Update(ctx context.Context, id string, expense entity.Expense) (*entity.Expense, error) {
 	sqlStatement := `UPDATE expense
 					 SET NAME=$2,
 					     AMOUNT=$3,
@@ -95,10 +95,10 @@ func (s *ExpenseStore) Update(ctx context.Context, id string, expense *entity.Ex
 		return nil, err
 	}
 
-	return expense, nil
+	return &expense, nil
 }
 
-func (s *ExpenseStore) Delete(ctx context.Context, id string) error {
+func (s *expenseRepository) Delete(ctx context.Context, id string) error {
 	sqlStatement := `DELETE FROM expense WHERE id=$1`
 
 	s.db.QueryRowContext(ctx, sqlStatement, id)
